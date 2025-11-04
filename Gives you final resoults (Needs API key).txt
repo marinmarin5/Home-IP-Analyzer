@@ -1,0 +1,55 @@
+from pathlib import Path
+import requests
+import json
+import time
+
+# --- Paths ---
+DESKTOP = Path(r"C:\Users\M.T.E\Desktop")
+RESULTS_FILE = DESKTOP / "results.txt"
+VT_API_KEY_FILE = DESKTOP / "my_APIS.txt"
+
+# --- Read VirusTotal API key ---
+try:
+    VT_API_KEY = VT_API_KEY_FILE.read_text(encoding="utf-8").strip()
+except FileNotFoundError:
+    print(f"❌ API key file not found: {VT_API_KEY_FILE}")
+    exit()
+
+# --- Read IPs from results.txt ---
+if not RESULTS_FILE.exists():
+    print(f"❌ IP file not found: {RESULTS_FILE}")
+    exit()
+
+ips = [line.strip() for line in RESULTS_FILE.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+# --- Output file ---
+OUTPUT_FILE = DESKTOP / "vt_results.txt"
+
+# --- VirusTotal API URL ---
+VT_URL = "https://www.virustotal.com/api/v3/ip_addresses/{}"
+
+# --- Headers ---
+headers = {"x-apikey": VT_API_KEY}
+
+# --- Function to check IP on VirusTotal ---
+def check_ip(ip):
+    response = requests.get(VT_URL.format(ip), headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        # Extract some useful info
+        last_analysis_stats = data.get("data", {}).get("attributes", {}).get("last_analysis_stats", {})
+        malicious = last_analysis_stats.get("malicious", 0)
+        suspicious = last_analysis_stats.get("suspicious", 0)
+        return f"{ip}: Malicious={malicious}, Suspicious={suspicious}"
+    else:
+        return f"{ip}: Error {response.status_code}"
+
+# --- Check IPs and save results ---
+with OUTPUT_FILE.open("w", encoding="utf-8") as f:
+    for ip in ips:
+        result = check_ip(ip)
+        print(result)
+        f.write(result + "\n")
+        time.sleep(15)  # VT free API limit: 4 requests/minute
+
+print(f"\n✅ Done! Results saved to {OUTPUT_FILE}")

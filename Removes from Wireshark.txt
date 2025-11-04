@@ -1,0 +1,64 @@
+from pathlib import Path
+import re
+from ipaddress import IPv4Address
+
+# --- File paths ---
+DESKTOP = Path(r"C:\Users\M.T.E\Desktop")
+
+WIRESHARK_FILE = DESKTOP / "wireshark.txt"
+MOJ_FILE = DESKTOP / "moj_ip.txt"
+GOOGLE_FILE = DESKTOP / "google_all_ips.txt"
+CLOUDFLARE_FILE = DESKTOP / "cloudflare.txt"
+APPLE_FILE = DESKTOP / "apple_ips_sve.txt"
+AKARI_FILE = DESKTOP / "akari_ips.txt"
+AMAZON_FILE = DESKTOP / "amazon_all_merged.txt"       # Updated
+MICROSOFT_FILE = DESKTOP / "microsoft_all_merged.txt" # Updated
+FASTLY_FILE = DESKTOP / "FASTLY.txt"                  # Added
+
+# --- Output file ---
+OUTPUT_FILE = DESKTOP / "results.txt"
+
+# --- Regex for IPv4 addresses ---
+ip_pattern = r"\b(?:(?:25[0-5]|2[0-4]\d|1?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|1?\d{1,2})\b"
+
+def read_ips_from_file(path):
+    """Extract all IP addresses from a file."""
+    if not path.exists():
+        print(f"⚠️ File not found: {path.name}")
+        return set()
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    return set(re.findall(ip_pattern, text))
+
+# --- Read IPs from Wireshark ---
+wireshark_ips = read_ips_from_file(WIRESHARK_FILE)
+
+# --- Read block lists ---
+block_files = [
+    MOJ_FILE,
+    GOOGLE_FILE,
+    CLOUDFLARE_FILE,
+    APPLE_FILE,
+    AKARI_FILE,
+    AMAZON_FILE,
+    MICROSOFT_FILE,
+    FASTLY_FILE   # Added
+]
+blocked_ips = set()
+
+for file in block_files:
+    blocked_ips |= read_ips_from_file(file)
+    print(f"📄 Loaded {file.name}")
+
+# --- Filter out blocked IPs ---
+filtered_ips = wireshark_ips - blocked_ips
+
+# --- Save results with numerical sorting ---
+with OUTPUT_FILE.open("w", encoding="utf-8") as f:
+    for ip in sorted(filtered_ips, key=lambda x: IPv4Address(x)):
+        f.write(ip + "\n")
+
+print("\n✅ Done!")
+print(f"Total Wireshark IPs: {len(wireshark_ips)}")
+print(f"Blocked IPs (all lists combined including Akari, Amazon, Microsoft, Google, Fastly): {len(blocked_ips)}")
+print(f"Remaining unique IPs: {len(filtered_ips)}")
+print(f"📁 Saved filtered IPs to: {OUTPUT_FILE}")
