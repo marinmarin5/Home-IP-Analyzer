@@ -4,7 +4,7 @@ import json
 import time
 
 # --- Paths ---
-DESKTOP = Path(r"C:\Users\M.T.E\Desktop")
+DESKTOP = Path(r"xyz") #Here put your API
 RESULTS_FILE = DESKTOP / "results.txt"
 VT_API_KEY_FILE = DESKTOP / "my_APIS.txt"
 
