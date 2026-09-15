@@ -3,7 +3,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> import re
 ...
 ... # Read the original text file
-... with open(r"C:\Users\M.T.E\Desktop\google.txt", "r", encoding="utf-8") as file:
+... with open(r"C:\Users\x\y\google.txt", "r", encoding="utf-8") as file: #Put your path on x and or y
 ...     text = file.read()
 ...
 ... # Regular expression to match IPv4 addresses
