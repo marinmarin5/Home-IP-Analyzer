@@ -3,7 +3,7 @@ import re
 from ipaddress import IPv4Address
 
 # --- File paths ---
-DESKTOP = Path(r"C:\Users\M.T.E\Desktop")
+DESKTOP = Path(r"xyz") # Where you wonna put it
 
 WIRESHARK_FILE = DESKTOP / "wireshark.txt"
 MOJ_FILE = DESKTOP / "moj_ip.txt"
